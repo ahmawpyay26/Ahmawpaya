@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '22'
         cache: 'pnpm'
@@ -22,22 +22,19 @@ jobs:
       run: npm install -g pnpm
     
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
     
     - name: Build web assets
       run: pnpm run build
     
     - name: Setup Java
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
     
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        api-level: 35
-        build-tools-version: 35.0.0
+      uses: android-actions/setup-android@v3
     
     - name: Install Cordova
       run: npm install -g cordova
@@ -60,7 +57,7 @@ jobs:
         cordova build android --debug
     
     - name: Upload APK as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: amaw-pyay-apk
         path: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
@@ -68,7 +65,7 @@ jobs:
     
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
       env:
