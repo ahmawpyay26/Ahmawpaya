@@ -1,0 +1,17 @@
+Current state:
+- Home page shows "Admin Login" and "Staff Login" buttons in header - GOOD
+- Product cards visible with images - GOOD
+- Need to verify product card buttons say "ပစ္စည်းမှာရန်" (orderProduct) instead of "အော်ဒါတင်ပါ"
+- Language toggle shows Myanmar (ဗမာ) - GOOD
+- Need to scroll down to see product card buttons
+- TypeScript: no errors
+- Tests: 24/24 pass
+- Server: running on port 3000
+
+Still need to verify:
+1. Product card button text changed to "ပစ္စည်းမှာရန်" (already done in code)
+2. Admin login flow works (admin/admin123)
+3. Staff CRUD in admin panel works
+4. Product price editing works
+5. Order deletion works
+6. Public order form strict validation works

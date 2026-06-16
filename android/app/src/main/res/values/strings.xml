@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">အမောပြေ</string>
+    <string name="title_activity_main">အမောပြေ</string>
+    <string name="package_name">com.amawpyay.waterdash</string>
+    <string name="custom_url_scheme">com.amawpyay.waterdash</string>
+</resources>

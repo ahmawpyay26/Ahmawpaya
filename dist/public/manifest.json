@@ -1,0 +1,50 @@
+{
+  "name": "အမောပြေ - Water Delivery & Factory Management",
+  "short_name": "အမောပြေ",
+  "description": "Pure Water Delivery & Factory Management System",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0891b2",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/manus-storage/amaw_pyay_logo_938ce02a.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/manus-storage/amaw_pyay_logo_938ce02a.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/manus-storage/amaw_pyay_logo_938ce02a.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+
+  "shortcuts": [
+    {
+      "name": "Admin Dashboard",
+      "short_name": "Admin",
+      "description": "Access admin dashboard",
+      "url": "/admin"
+    },
+    {
+      "name": "Staff Dashboard",
+      "short_name": "Staff",
+      "description": "Access staff dashboard",
+      "url": "/staff"
+    }
+  ]
+}

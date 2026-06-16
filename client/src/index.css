@@ -1,0 +1,91 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-family: "Padauk";
+  src: url("https://fonts.gstatic.com/s/padauk/v16/RrQRboJg-id7OnbBa0_g3LlYbg.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  --color-background: oklch(0.99 0.002 240);
+  --color-foreground: oklch(0.15 0.02 240);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.15 0.02 240);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.15 0.02 240);
+  --color-primary: oklch(0.55 0.15 220);
+  --color-primary-foreground: oklch(0.99 0.002 240);
+  --color-secondary: oklch(0.93 0.02 220);
+  --color-secondary-foreground: oklch(0.25 0.04 220);
+  --color-muted: oklch(0.95 0.01 220);
+  --color-muted-foreground: oklch(0.5 0.03 220);
+  --color-accent: oklch(0.93 0.02 220);
+  --color-accent-foreground: oklch(0.25 0.04 220);
+  --color-destructive: oklch(0.55 0.2 25);
+  --color-destructive-foreground: oklch(0.99 0.002 240);
+  --color-border: oklch(0.88 0.02 220);
+  --color-input: oklch(0.88 0.02 220);
+  --color-ring: oklch(0.55 0.15 220);
+  --color-chart-1: oklch(0.55 0.15 220);
+  --color-chart-2: oklch(0.6 0.12 160);
+  --color-chart-3: oklch(0.65 0.1 280);
+  --color-chart-4: oklch(0.7 0.15 60);
+  --color-chart-5: oklch(0.5 0.15 340);
+  --color-sidebar: oklch(0.97 0.01 220);
+  --color-sidebar-foreground: oklch(0.15 0.02 240);
+  --color-sidebar-primary: oklch(0.55 0.15 220);
+  --color-sidebar-primary-foreground: oklch(0.99 0.002 240);
+  --color-sidebar-accent: oklch(0.93 0.02 220);
+  --color-sidebar-accent-foreground: oklch(0.25 0.04 220);
+  --color-sidebar-border: oklch(0.88 0.02 220);
+  --color-sidebar-ring: oklch(0.55 0.15 220);
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --font-sans: "Inter", "Padauk", system-ui, sans-serif;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
+  }
+  html {
+    font-family: var(--font-sans);
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  .container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8;
+    width: 100%;
+    max-width: 1280px;
+  }
+  .flex {
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
+/* Water brand accent gradient */
+.water-gradient {
+  background: linear-gradient(135deg, oklch(0.55 0.15 220), oklch(0.6 0.12 200));
+}
+
+.water-gradient-light {
+  background: linear-gradient(135deg, oklch(0.92 0.04 220), oklch(0.96 0.02 200));
+}
+
+/* Myanmar font support */
+.font-myanmar {
+  font-family: "Padauk", "Myanmar Text", "Noto Sans Myanmar", sans-serif;
+}
