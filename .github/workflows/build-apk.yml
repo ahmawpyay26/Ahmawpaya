@@ -1,0 +1,75 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22'
+        cache: 'pnpm'
+    
+    - name: Install pnpm
+      run: npm install -g pnpm
+    
+    - name: Install dependencies
+      run: pnpm install
+    
+    - name: Build web assets
+      run: pnpm run build
+    
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+      with:
+        api-level: 35
+        build-tools-version: 35.0.0
+    
+    - name: Install Cordova
+      run: npm install -g cordova
+    
+    - name: Create Cordova project
+      run: |
+        cd /tmp
+        cordova create amaw_app com.amawpyay.waterdash "အမောပြေ"
+        cd amaw_app
+        cordova platform add android@14
+    
+    - name: Copy web assets
+      run: |
+        rm -rf /tmp/amaw_app/www
+        cp -r ${{ github.workspace }}/dist /tmp/amaw_app/www
+    
+    - name: Build APK
+      run: |
+        cd /tmp/amaw_app
+        cordova build android --debug
+    
+    - name: Upload APK as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: amaw-pyay-apk
+        path: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
+        retention-days: 30
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
