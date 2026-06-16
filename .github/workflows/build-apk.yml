@@ -16,13 +16,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '22'
-        cache: 'pnpm'
     
-    - name: Install pnpm
+    - name: Install pnpm globally
       run: npm install -g pnpm
     
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: pnpm install
     
     - name: Build web assets
       run: pnpm run build
