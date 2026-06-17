@@ -37,10 +37,22 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Determine API endpoint based on environment
+const getApiUrl = () => {
+  // Check if running in Cordova/APK environment
+  if (typeof window !== 'undefined' && (window as any).cordova) {
+    // For APK: use the deployed web server URL
+    const deployedUrl = import.meta.env.VITE_API_URL || 'https://waterdash-95vzqj2j.manus.space';
+    return `${deployedUrl}/api/trpc`;
+  }
+  // For web browser: use relative path
+  return '/api/trpc';
+};
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: getApiUrl(),
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
