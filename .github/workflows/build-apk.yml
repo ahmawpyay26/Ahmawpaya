@@ -63,9 +63,28 @@ jobs:
         retention-days: 30
     
     - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
       with:
         files: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
+        tag_name: v${{ github.run_number }}
+        body: |
+          Automated APK build from commit ${{ github.sha }}
+          
+          **Build Details:**
+          - Commit: ${{ github.sha }}
+          - Branch: ${{ github.ref_name }}
+          - Run: ${{ github.run_number }}
+          
+          **Installation:**
+          1. Download the APK file below
+          2. Enable "Unknown sources" in Android settings
+          3. Install the APK on your Android device
+          4. Launch the app and test the login flow
+          
+          **Features:**
+          - Cloud backend integration (https://waterdash-95vzqj2j.manus.space)
+          - Offline support with Service Worker
+          - PWA capabilities
+          - Bilingual UI (Myanmar/English)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
