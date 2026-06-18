@@ -52,13 +52,7 @@ jobs:
         rm -rf /tmp/amaw_app/www
         cp -r ${{ github.workspace }}/dist /tmp/amaw_app/www
     
-    - name: Install Cordova plugins
-      run: |
-        cd /tmp/amaw_app
-        cordova plugin add cordova-plugin-whitelist
-        cordova plugin add cordova-plugin-advanced-http
-    
-    - name: Update config.xml for API access
+    - name: Update config.xml
       run: |
         cat > /tmp/amaw_app/config.xml << 'XMLEOF'
         <?xml version='1.0' encoding='utf-8'?>
@@ -68,7 +62,6 @@ jobs:
           <author email="admin@sonesaye.com" href="https://sonesaye.com">Ahmaw Pyay</author>
           <content src="index.html" />
           <plugin name="cordova-plugin-whitelist" spec="1" />
-          <plugin name="cordova-plugin-advanced-http" spec="3.3.7" />
           <access origin="*" />
           <allow-navigation href="*" />
           <allow-intent href="http://*/*" />
@@ -81,8 +74,6 @@ jobs:
             <allow-intent href="market:*" />
             <preference name="loglevel" value="error" />
             <preference name="orientation" value="portrait" />
-            <preference name="AndroidInsecureFileModeEnabled" value="true" />
-            <preference name="android:usesCleartextTraffic" value="true" />
           </platform>
         </widget>
         XMLEOF
@@ -90,7 +81,7 @@ jobs:
     - name: Build APK
       run: |
         cd /tmp/amaw_app
-        cordova build android --debug
+        cordova build android --debug 2>&1 | tail -100
     
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
@@ -116,13 +107,12 @@ jobs:
           1. Download the APK file below
           2. Enable "Unknown sources" in Android settings
           3. Install the APK on your Android device
-          4. Launch the app and test the login flow
+          4. Launch the app
           
           **Features:**
           - Cloud backend integration (https://api.sonesaye.com)
           - Offline support with Service Worker
           - PWA capabilities
           - Bilingual UI (Myanmar/English)
-          - SSL/HTTPS support
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
