@@ -37,37 +37,37 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
     
-    - name: Install Cordova
-      run: npm install -g cordova
-    
-    - name: Create Cordova project
+    - name: Setup Capacitor
       run: |
-        cd /tmp
-        cordova create amaw_app com.amawpyay.waterdash "အမောပြေ"
-        cd amaw_app
-        cordova platform add android@14
+        npm install -g @capacitor/cli
+        npm install -g @capacitor/core @capacitor/android
     
-    - name: Copy web assets
+    - name: Initialize Capacitor
       run: |
-        rm -rf /tmp/amaw_app/www
-        cp -r ${{ github.workspace }}/dist /tmp/amaw_app/www
+        cd ${{ github.workspace }}
+        npx cap init --web-dir dist
+    
+    - name: Add Android platform
+      run: |
+        cd ${{ github.workspace }}
+        npx cap add android
     
     - name: Build APK
       run: |
-        cd /tmp/amaw_app
-        cordova build android --debug
+        cd ${{ github.workspace }}
+        npx cap build android --keystorepath=$HOME/.android/debug.keystore --keystorepass=android --keystorealias=androiddebugkey --keystorealiaspass=android --apkpath=app-debug.apk
     
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
       with:
         name: amaw-pyay-apk
-        path: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
+        path: ${{ github.workspace }}/android/app/build/outputs/apk/debug/*.apk
         retention-days: 30
     
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        files: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
+        files: ${{ github.workspace }}/android/app/build/outputs/apk/debug/*.apk
         tag_name: v${{ github.run_number }}
         body: |
           Automated APK build from commit ${{ github.sha }}
