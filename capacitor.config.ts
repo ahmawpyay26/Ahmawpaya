@@ -1,6 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
-const API_URL = process.env.VITE_API_URL || 'https://waterdash-95vzqj2j.manus.space';
+const API_URL = process.env.VITE_API_URL || 'https://api.sonesaye.com';
 
 const config: CapacitorConfig = {
   appId: 'com.amawpyay.waterdash',
@@ -9,6 +9,9 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     allowNavigation: [
+      'api.sonesaye.com',
+      'sonesaye.com',
+      '*.sonesaye.com',
       'waterdash-95vzqj2j.manus.space',
       '*.manus.space',
       'localhost',

@@ -48,8 +48,8 @@ const getApiUrl = () => {
   console.log('[API Config] User Agent:', navigator.userAgent);
   
   if (isNative) {
-    // For APK: use the deployed web server URL
-    const deployedUrl = import.meta.env.VITE_API_URL || 'https://waterdash-95vzqj2j.manus.space';
+    // For APK: use the AWS backend URL
+    const deployedUrl = import.meta.env.VITE_API_URL || 'https://api.sonesaye.com';
     const apiUrl = `${deployedUrl}/api/trpc`;
     console.log('[API Config] Using native endpoint:', apiUrl);
     return apiUrl;
