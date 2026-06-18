@@ -49,8 +49,20 @@ jobs:
     
     - name: Copy web assets
       run: |
-        rm -rf /tmp/amaw_app/www
-        cp -r ${{ github.workspace }}/dist /tmp/amaw_app/www
+        rm -rf /tmp/amaw_app/www/*
+        cp -r ${{ github.workspace }}/dist/* /tmp/amaw_app/www/
+        ls -la /tmp/amaw_app/www/ | head -20
+    
+    - name: Verify index.html exists
+      run: |
+        if [ -f /tmp/amaw_app/www/index.html ]; then
+          echo "✅ index.html found"
+          head -20 /tmp/amaw_app/www/index.html
+        else
+          echo "❌ index.html NOT found"
+          ls -la /tmp/amaw_app/www/
+          exit 1
+        fi
     
     - name: Update config.xml
       run: |
@@ -74,6 +86,8 @@ jobs:
             <allow-intent href="market:*" />
             <preference name="loglevel" value="error" />
             <preference name="orientation" value="portrait" />
+            <preference name="Fullscreen" value="false" />
+            <preference name="ShowTitle" value="true" />
           </platform>
         </widget>
         XMLEOF
@@ -82,6 +96,10 @@ jobs:
       run: |
         cd /tmp/amaw_app
         cordova build android --debug 2>&1 | tail -100
+    
+    - name: Verify APK was created
+      run: |
+        ls -lh /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/
     
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
