@@ -37,37 +37,63 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
     
-    - name: Setup Capacitor
-      run: |
-        npm install -g @capacitor/cli
-        npm install -g @capacitor/core @capacitor/android
+    - name: Install Cordova
+      run: npm install -g cordova
     
-    - name: Initialize Capacitor
+    - name: Create Cordova project
       run: |
-        cd ${{ github.workspace }}
-        npx cap init --web-dir dist
+        cd /tmp
+        cordova create amaw_app com.amawpyay.waterdash "အမောပြေ"
+        cd amaw_app
+        cordova platform add android@14
     
-    - name: Add Android platform
+    - name: Copy web assets
       run: |
-        cd ${{ github.workspace }}
-        npx cap add android
+        rm -rf /tmp/amaw_app/www
+        cp -r ${{ github.workspace }}/dist /tmp/amaw_app/www
+    
+    - name: Update config.xml for API access
+      run: |
+        cat > /tmp/amaw_app/config.xml << 'XMLEOF'
+        <?xml version='1.0' encoding='utf-8'?>
+        <widget id="com.amawpyay.waterdash" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+          <name>အမောပြေ</name>
+          <description>Pure Water Delivery Service</description>
+          <author email="admin@sonesaye.com" href="https://sonesaye.com">Ahmaw Pyay</author>
+          <content src="index.html" />
+          <plugin name="cordova-plugin-whitelist" spec="1" />
+          <access origin="*" />
+          <allow-navigation href="*" />
+          <allow-intent href="http://*/*" />
+          <allow-intent href="https://*/*" />
+          <allow-intent href="tel:*" />
+          <allow-intent href="sms:*" />
+          <allow-intent href="mailto:*" />
+          <allow-intent href="geo:*" />
+          <platform name="android">
+            <allow-intent href="market:*" />
+            <preference name="loglevel" value="error" />
+            <preference name="orientation" value="portrait" />
+          </platform>
+        </widget>
+        XMLEOF
     
     - name: Build APK
       run: |
-        cd ${{ github.workspace }}
-        npx cap build android --keystorepath=$HOME/.android/debug.keystore --keystorepass=android --keystorealias=androiddebugkey --keystorealiaspass=android --apkpath=app-debug.apk
+        cd /tmp/amaw_app
+        cordova build android --debug
     
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
       with:
         name: amaw-pyay-apk
-        path: ${{ github.workspace }}/android/app/build/outputs/apk/debug/*.apk
+        path: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
         retention-days: 30
     
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        files: ${{ github.workspace }}/android/app/build/outputs/apk/debug/*.apk
+        files: /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/*.apk
         tag_name: v${{ github.run_number }}
         body: |
           Automated APK build from commit ${{ github.sha }}
@@ -84,7 +110,7 @@ jobs:
           4. Launch the app and test the login flow
           
           **Features:**
-          - Cloud backend integration (https://waterdash-95vzqj2j.manus.space)
+          - Cloud backend integration (https://api.sonesaye.com)
           - Offline support with Service Worker
           - PWA capabilities
           - Bilingual UI (Myanmar/English)
