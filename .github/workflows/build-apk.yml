@@ -26,7 +26,9 @@ jobs:
       run: pnpm install
     
     - name: Build web assets
-      run: pnpm run build
+      run: |
+        export VITE_API_URL="https://api.sonesaye.com"
+        pnpm run build
     
     - name: Setup Java
       uses: actions/setup-java@v4
@@ -47,24 +49,32 @@ jobs:
         cd amaw_app
         cordova platform add android@14
     
+    - name: Add Cordova plugins
+      run: |
+        cd /tmp/amaw_app
+        cordova plugin add cordova-plugin-whitelist
+        cordova plugin add cordova-plugin-network-information
+        cordova plugin add cordova-plugin-device
+    
     - name: Copy web assets
       run: |
         rm -rf /tmp/amaw_app/www/*
         cp -r ${{ github.workspace }}/dist/* /tmp/amaw_app/www/
+        
+        # Verify files
+        echo "=== Files copied ==="
         ls -la /tmp/amaw_app/www/ | head -20
-    
-    - name: Verify index.html exists
-      run: |
+        
+        # Check index.html
         if [ -f /tmp/amaw_app/www/index.html ]; then
           echo "✅ index.html found"
-          head -20 /tmp/amaw_app/www/index.html
+          wc -l /tmp/amaw_app/www/index.html
         else
           echo "❌ index.html NOT found"
-          ls -la /tmp/amaw_app/www/
           exit 1
         fi
     
-    - name: Update config.xml
+    - name: Update config.xml with enhanced settings
       run: |
         cat > /tmp/amaw_app/config.xml << 'XMLEOF'
         <?xml version='1.0' encoding='utf-8'?>
@@ -73,7 +83,13 @@ jobs:
           <description>Pure Water Delivery Service</description>
           <author email="admin@sonesaye.com" href="https://sonesaye.com">Ahmaw Pyay</author>
           <content src="index.html" />
+          
+          <!-- Plugins -->
           <plugin name="cordova-plugin-whitelist" spec="1" />
+          <plugin name="cordova-plugin-network-information" spec="2" />
+          <plugin name="cordova-plugin-device" spec="2" />
+          
+          <!-- Access policies -->
           <access origin="*" />
           <allow-navigation href="*" />
           <allow-intent href="http://*/*" />
@@ -82,23 +98,55 @@ jobs:
           <allow-intent href="sms:*" />
           <allow-intent href="mailto:*" />
           <allow-intent href="geo:*" />
+          
+          <!-- Android platform specific -->
           <platform name="android">
             <allow-intent href="market:*" />
+            
+            <!-- Preferences -->
             <preference name="loglevel" value="error" />
             <preference name="orientation" value="portrait" />
             <preference name="Fullscreen" value="false" />
             <preference name="ShowTitle" value="true" />
+            <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+            
+            <!-- Allow cleartext traffic to HTTPS (for development) -->
+            <preference name="android:usesCleartextTraffic" value="true" />
+            
+            <!-- Network security config -->
+            <resource-file src="network_security_config.xml" target="res/xml/network_security_config.xml" />
           </platform>
         </widget>
+        XMLEOF
+    
+    - name: Create network security config
+      run: |
+        mkdir -p /tmp/amaw_app/res/xml
+        cat > /tmp/amaw_app/res/xml/network_security_config.xml << 'XMLEOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <network-security-config>
+          <domain-config cleartextTrafficPermitted="true">
+            <domain includeSubdomains="true">api.sonesaye.com</domain>
+            <domain includeSubdomains="true">sonesaye.com</domain>
+            <domain includeSubdomains="true">localhost</domain>
+            <domain includeSubdomains="true">127.0.0.1</domain>
+          </domain-config>
+          <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+          </trust-anchors>
+        </network-security-config>
         XMLEOF
     
     - name: Build APK
       run: |
         cd /tmp/amaw_app
-        cordova build android --debug 2>&1 | tail -100
+        cordova build android --debug 2>&1 | tail -150
     
     - name: Verify APK was created
       run: |
+        echo "=== Checking for APK files ==="
+        find /tmp/amaw_app/platforms/android -name "*.apk" -type f
         ls -lh /tmp/amaw_app/platforms/android/app/build/outputs/apk/debug/
     
     - name: Upload APK as artifact
@@ -132,5 +180,7 @@ jobs:
           - Offline support with Service Worker
           - PWA capabilities
           - Bilingual UI (Myanmar/English)
+          - Network detection
+          - Device information
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
