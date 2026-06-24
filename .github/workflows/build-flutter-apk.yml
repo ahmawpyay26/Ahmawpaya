@@ -36,9 +36,16 @@ jobs:
 
       - name: Install Android SDK platforms
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" --verbose || true
+          echo "Installing Android SDK 35 and build-tools..."
+          sdkmanager --list_installed | grep -E "platforms;android-35|build-tools;35"
+          if [ $? -ne 0 ]; then
+            echo "Installing missing SDK packages..."
+            yes | sdkmanager "platforms;android-35" "build-tools;35.0.0" 2>&1 | tail -20
+          fi
+          echo "Verifying Android SDK 35 installation..."
+          ls -la $ANDROID_SDK_ROOT/platforms/android-35/android.jar 2>/dev/null || echo "Warning: android.jar not found"
         env:
-          ANDROID_HOME: /opt/hostedtoolcache/android/sdk
+          ANDROID_SDK_ROOT: /opt/hostedtoolcache/android/sdk
 
       - name: Get Flutter dependencies
         run: |
