@@ -1,0 +1,92 @@
+FROM ubuntu:22.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive \
+    FLUTTER_VERSION=3.22.0 \
+    ANDROID_SDK_ROOT=/opt/android-sdk \
+    ANDROID_HOME=/opt/android-sdk \
+    PATH=/opt/flutter/bin:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:$PATH
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-17-jdk \
+    git \
+    curl \
+    wget \
+    unzip \
+    xz-utils \
+    lib32z1 \
+    lib32ncurses6 \
+    libc6-i386 \
+    libstdc++6:i386 \
+    libgcc1:i386 \
+    libz1:i386 \
+    libncurses6:i386 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install Flutter
+RUN mkdir -p /opt && \
+    cd /opt && \
+    wget -q https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz && \
+    tar -xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz && \
+    rm flutter_linux_${FLUTTER_VERSION}-stable.tar.xz && \
+    flutter config --no-analytics && \
+    flutter doctor -v
+
+# Create Android SDK directory
+RUN mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools
+
+# Download Android command-line tools
+RUN cd /tmp && \
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip && \
+    unzip -q commandlinetools-linux-10406996_latest.zip && \
+    mv cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest && \
+    rm commandlinetools-linux-10406996_latest.zip
+
+# Accept Android licenses and install SDK packages
+RUN yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 && \
+    ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
+    "platforms;android-35" \
+    "platforms;android-34" \
+    "build-tools;35.0.0" \
+    "build-tools;34.0.0" \
+    "platform-tools" \
+    "tools" \
+    --verbose 2>&1 | tail -20
+
+# Verify Android SDK installation
+RUN echo "=== Android SDK Verification ===" && \
+    ls -la ${ANDROID_SDK_ROOT}/platforms/ && \
+    ls -la ${ANDROID_SDK_ROOT}/build-tools/ && \
+    ls -la ${ANDROID_SDK_ROOT}/platform-tools/
+
+# Set working directory
+WORKDIR /app
+
+# Copy Flutter project
+COPY . /app/
+
+# Run flutter pub get
+RUN cd /app && \
+    flutter pub get
+
+# Run flutter analyze (continue on errors)
+RUN cd /app && \
+    flutter analyze || true
+
+# Build release APK
+RUN cd /app && \
+    flutter build apk --release --target-platform android-arm64 2>&1 | tee /tmp/build.log
+
+# Output APK information
+RUN echo "=== Build Complete ===" && \
+    if [ -f /app/build/app/outputs/flutter-apk/app-release.apk ]; then \
+        ls -lh /app/build/app/outputs/flutter-apk/app-release.apk && \
+        sha256sum /app/build/app/outputs/flutter-apk/app-release.apk; \
+    else \
+        echo "APK not found!"; \
+        find /app/build -name "*.apk" 2>/dev/null || echo "No APK files found"; \
+    fi
+
+# Keep container running for inspection
+CMD ["/bin/bash"]

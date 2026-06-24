@@ -1,0 +1,106 @@
+workflows:
+  flutter-android-release:
+    name: Flutter Android Release APK
+    instance_type: linux_x2
+    environment:
+      flutter: 3.22.0
+      xcode: latest
+      java: 17
+      android_sdk: 35
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch:
+        include_patterns:
+          - main
+          - master
+          - develop
+    scripts:
+      - name: Get Flutter dependencies
+        script: |
+          cd mobile_flutter
+          flutter pub get
+
+      - name: Run Flutter analyze
+        script: |
+          cd mobile_flutter
+          flutter analyze || true
+
+      - name: Build release APK
+        script: |
+          cd mobile_flutter
+          flutter build apk \
+            --release \
+            --target-platform android-arm64 \
+            -v
+
+      - name: Generate APK checksum
+        script: |
+          cd mobile_flutter
+          if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            sha256sum build/app/outputs/flutter-apk/app-release.apk > build/app/outputs/flutter-apk/app-release.apk.sha256
+            cat build/app/outputs/flutter-apk/app-release.apk.sha256
+          fi
+
+    artifacts:
+      - mobile_flutter/build/app/outputs/flutter-apk/app-release.apk
+      - mobile_flutter/build/app/outputs/flutter-apk/app-release.apk.sha256
+
+    publishing:
+      email:
+        recipients:
+          - $DEVELOPER_EMAIL
+        notify:
+          success: true
+          failure: true
+      slack:
+        channel: '#builds'
+        notify_on_build_start: true
+        notify:
+          success: true
+          failure: true
+
+  flutter-android-debug:
+    name: Flutter Android Debug APK
+    instance_type: linux_x2
+    environment:
+      flutter: 3.22.0
+      xcode: latest
+      java: 17
+      android_sdk: 35
+    triggering:
+      events:
+        - pull_request
+      branch:
+        include_patterns:
+          - develop
+    scripts:
+      - name: Get Flutter dependencies
+        script: |
+          cd mobile_flutter
+          flutter pub get
+
+      - name: Run Flutter analyze
+        script: |
+          cd mobile_flutter
+          flutter analyze || true
+
+      - name: Build debug APK
+        script: |
+          cd mobile_flutter
+          flutter build apk \
+            --debug \
+            --target-platform android-arm64 \
+            -v
+
+    artifacts:
+      - mobile_flutter/build/app/outputs/flutter-apk/app-debug.apk
+
+    publishing:
+      email:
+        recipients:
+          - $DEVELOPER_EMAIL
+        notify:
+          success: true
+          failure: true
