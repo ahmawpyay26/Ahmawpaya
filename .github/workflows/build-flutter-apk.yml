@@ -37,10 +37,16 @@ jobs:
       - name: Install Android SDK platforms
         run: |
           echo "Installing Android SDK 35 and build-tools..."
-          sdkmanager --list_installed | grep -E "platforms;android-35|build-tools;35"
-          if [ $? -ne 0 ]; then
-            echo "Installing missing SDK packages..."
-            yes | sdkmanager "platforms;android-35" "build-tools;35.0.0" 2>&1 | tail -20
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -f "$SDKMANAGER" ]; then
+            SDKMANAGER=$(find $ANDROID_SDK_ROOT/cmdline-tools -name sdkmanager -type f 2>/dev/null | head -1)
+          fi
+          if [ -z "$SDKMANAGER" ] || [ ! -f "$SDKMANAGER" ]; then
+            echo "Warning: sdkmanager not found, skipping SDK installation"
+            echo "Android SDK packages should already be installed by flutter-action"
+          else
+            echo "Using sdkmanager: $SDKMANAGER"
+            yes | "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" 2>&1 | tail -10 || true
           fi
           echo "Verifying Android SDK 35 installation..."
           ls -la $ANDROID_SDK_ROOT/platforms/android-35/android.jar 2>/dev/null || echo "Warning: android.jar not found"
